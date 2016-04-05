@@ -511,7 +511,7 @@ We're using the [Appraisal](https://github.com/thoughtbot/appraisal) gem to run
 our [RSpec](https://www.relishapp.com/rspec/) test suite against multiple
 versions of [Rails](http://rubyonrails.org/).
 
-* The unit test suite can be run with `rake` (aliased to `rake spec:unit`).
+* The unit test suite can be run with `rake` (aliased to `rake spec:units`).
 * The integration test suite can be run with `rake spec:features`.
 
 ### License

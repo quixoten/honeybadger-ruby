@@ -19,4 +19,4 @@ dependencies:
     - gem regenerate_binstubs
 test:
   override:
-    - bundle exec appraisal rspec
+    - bundle exec appraisal "rake spec:all"
