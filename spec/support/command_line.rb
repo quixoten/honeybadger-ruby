@@ -1,47 +1,18 @@
-require 'forwardable'
 require 'pathname'
-require 'aruba'
-require 'aruba/api'
-require 'fileutils'
 require 'json'
 
-CMD_ROOT = Pathname.new(File.expand_path('../../../tmp/features', __FILE__))
-RAILS_ROOT = CMD_ROOT.join('current')
-
-module ArubaApiWrapper
-  include Aruba::Api
-  extend self
-
-  attr_writer :dirs, :aruba_timeout_seconds, :aruba_io_wait_seconds, :processes
-end
-
 module CommandLine
-  extend Forwardable
-
-  def_delegators :ArubaApiWrapper, :run_simple, :unescape, :cd, :all_output,
-    :set_env, :restore_env, :write_file, :clean_current_dir,
-    :terminate_processes!, :processes=, :dirs=, :aruba_timeout_seconds=,
-    :aruba_io_wait_seconds=, :last_exit_status, :append_to_file, :current_dir
-
-  Result = Struct.new(:cmd, :code) do
-    def success?
-      (200..299).cover?(code.to_i)
-    end
+  # These override some deprecated Aruba helpers which are still useful to us.
+  def all_output
+    all_commands.map { |c| c.output }.join("\n")
   end
-
-  def cmd(cmd, fail_on_error = false)
-    run_simple(unescape(cmd), fail_on_error)
-    Result.new(cmd, last_exit_status)
-  end
-
-  def assert_cmd(cmd)
-    cmd(cmd, true)
+  def current_dir
+    expand_path('.')
   end
 
   def capify
-    unless cmd('bundle exec cap install .').success?
-      assert_cmd('bundle exec capify .')
-    end
+    run_simple('bundle exec cap install .', fail_on_error: true)
+    run_simple('bundle exec capify .', fail_on_error: true)
   end
 
   def assert_no_notification
@@ -64,25 +35,5 @@ module CommandLine
         expect(actual[k]).to eq v
       end
     end
-  end
-end
-
-RSpec::Matchers.define :run_successfully do |expected|
-  match do |actual|
-    actual.code == 0
-  end
-
-  failure_message do |actual|
-    "expected that `#{actual.cmd}` to exit with 0. (exited with #{actual.code})"
-  end
-end
-
-RSpec::Matchers.define :exit_with do |expected|
-  match do |actual|
-    actual.code == expected
-  end
-
-  failure_message do |actual|
-    "expected that `#{actual.cmd}` to exit with #{expected}. (exited with #{actual.code})"
   end
 end

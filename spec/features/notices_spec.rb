@@ -3,9 +3,9 @@ REQUEST_FILE = TMP_DIR.join('features', 'request.rb').freeze
 feature "error notifications" do
   scenario "when the server responds with a 403" do
     before do
-      set_env('HONEYBADGER_API_KEY', 'asdf')
-      set_env('HONEYBADGER_BACKEND', 'server')
-      set_env('HONEYBADGER_LOGGING_LEVEL', '0')
+      set_environment_variable('HONEYBADGER_API_KEY', 'asdf')
+      set_environment_variable('HONEYBADGER_BACKEND', 'server')
+      set_environment_variable('HONEYBADGER_LOGGING_LEVEL', '0')
 
       write_file('test.rb', <<-CONTENTS)
       require 'honeybadger'
@@ -24,7 +24,7 @@ feature "error notifications" do
     end
 
     it "stops the agent" do
-      expect(assert_cmd('ruby test.rb')).to run_successfully
+      expect(run('ruby test.rb')).to be_successfully_executed
       expect(all_output).to match(/unauthorized/i)
     end
   end
@@ -33,9 +33,9 @@ feature "error notifications" do
     let(:url) { 'http://example.com:123/test/index?param=value' }
 
     before do
-      set_env('SECRET_KEY_BASE', 'sekret')
-      set_env('HONEYBADGER_API_KEY', 'asdf')
-      set_env('HONEYBADGER_LOGGING_LEVEL', '0')
+      set_environment_variable('SECRET_KEY_BASE', 'sekret')
+      set_environment_variable('HONEYBADGER_API_KEY', 'asdf')
+      set_environment_variable('HONEYBADGER_LOGGING_LEVEL', '0')
     end
 
     before do
@@ -55,7 +55,7 @@ feature "error notifications" do
 
     context "and ActionDispatch::Test process has been included globally" do
       before do
-        append_to_file(RAILS_ROOT.join('config', 'initializers', 'adtp.rb'), 'include ActionDispatch::TestProcess')
+        write_file('config/initializers/adtp.rb', 'include ActionDispatch::TestProcess')
       end
 
       it "reports the exception to Honeybadger" do
@@ -71,7 +71,7 @@ feature "error notifications" do
     let(:url) { 'http://example.com:123/test/failure?param=value' }
 
     before do
-      set_env('HONEYBADGER_LOGGING_LEVEL', '0')
+      set_environment_variable('HONEYBADGER_LOGGING_LEVEL', '0')
     end
 
     before do
@@ -86,7 +86,7 @@ feature "error notifications" do
     end
 
     it "reports the exception to Honeybadger" do
-      assert_cmd('ruby request.rb')
+      expect(run('ruby request.rb')).to be_successfully_executed
       assert_notification('error' => {'class' => 'RuntimeError', 'message' => 'RuntimeError: Sinatra has left the building'}, 'request' => {'url' => url})
     end
   end

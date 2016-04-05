@@ -1,7 +1,9 @@
 require 'rspec/its'
 require 'pathname'
 require 'logger'
+require 'pry'
 require 'simplecov'
+require 'aruba/rspec'
 
 # Minimum ENV required for Rails in production.
 ENV['RAILS_ENV'] = 'production'
@@ -12,6 +14,9 @@ ENV['RACK_ENV'] = nil
 
 TMP_DIR = Pathname.new(File.expand_path('../../tmp', __FILE__))
 FIXTURES_PATH = Pathname.new(File.expand_path('../fixtures/', __FILE__))
+CMD_ROOT = TMP_DIR.join('features')
+RAILS_CACHE = TMP_DIR.join('rails_app')
+RAILS_ROOT = CMD_ROOT.join('current')
 NULL_LOGGER = Logger.new('/dev/null')
 NULL_LOGGER.level = Logger::Severity::DEBUG
 
@@ -29,6 +34,14 @@ begin
   I18n.enforce_available_locales = false
 rescue LoadError
   nil
+end
+
+# Aruba configuration.
+Aruba.configure do |config|
+  t = RUBY_PLATFORM == 'java' ? 120 : 7
+  config.working_directory = 'tmp/features'
+  config.exit_timeout = t
+  config.io_wait_timeout = t
 end
 
 # Require files in spec/support/ and its subdirectories.
@@ -108,37 +121,29 @@ RSpec.configure do |config|
   config.alias_example_group_to :feature, type: :feature, framework: :ruby
   config.alias_example_group_to :scenario
 
+  config.include Aruba::Api, type: :feature
   config.include CommandLine, type: :feature
   config.include RailsHelpers, type: :feature, framework: :rails
 
-  config.before(:all, type: :feature) do
-    self.dirs = ['tmp', 'features']
-    t = RUBY_PLATFORM == 'java' ? 120 : 7
-    self.aruba_timeout_seconds = t
-    self.aruba_io_wait_seconds = t
-    clean_current_dir
-  end
-
   config.before(:each, type: :feature) do
-    terminate_processes!
-    self.processes = []
-    self.dirs = ['tmp', 'features']
-    restore_env
-    set_env('HONEYBADGER_BACKEND', 'debug')
-    set_env('HONEYBADGER_LOGGING_PATH', 'STDOUT')
-  end
-
-  config.before(:each, type: :feature, framework: :ruby) do
-    clean_current_dir
+    set_environment_variable('HONEYBADGER_BACKEND', 'debug')
+    set_environment_variable('HONEYBADGER_LOGGING_PATH', 'STDOUT')
   end
 
   config.before(:all, type: :feature, framework: :rails) do
-    cmd('rails new testing -O -S -G -J -T --skip-gemfile --skip-bundle')
+    FileUtils.rm_r(RAILS_CACHE) if RAILS_CACHE.exist?
   end
 
   config.before(:each, type: :feature, framework: :rails) do
-    FileUtils.rm_r(RAILS_ROOT) if RAILS_ROOT.exist?
-    FileUtils.cp_r(CMD_ROOT.join('testing'), RAILS_ROOT)
+    unless RAILS_CACHE.exist?
+      # This command needs to run in the before(:each) callback to satisfy
+      # aruba, but we only want to run it once per suite.
+      run_simple("rails new #{ RAILS_CACHE } -O -S -G -J -T --skip-gemfile --skip-bundle", fail_on_error: true)
+    end
+
+    # Copying the cached version is faster than generating a new rails app
+    # before each scenario.
+    FileUtils.cp_r(RAILS_CACHE, RAILS_ROOT)
     cd('current')
   end
 

@@ -6,7 +6,7 @@ feature "Installing honeybadger via the cli" do
     end
 
     it "outputs the honeybadger task" do
-      assert_cmd('bundle exec cap -T')
+      expect(run('bundle exec cap -T')).to be_successfully_executed
       expect(all_output).to match(/honeybadger\:deploy/i)
     end
   end
