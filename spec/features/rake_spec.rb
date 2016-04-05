@@ -1,5 +1,5 @@
 feature "Rescuing exceptions in a rake task" do
-  RSpec.shared_examples "a rake application" do
+  shared_examples_for "a rake application" do
     before do
       set_environment_variable('HONEYBADGER_API_KEY', 'asdf')
       set_environment_variable('HONEYBADGER_LOGGING_LEVEL', 'DEBUG')

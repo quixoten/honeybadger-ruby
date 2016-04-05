@@ -1,7 +1,7 @@
 require 'honeybadger/config'
 
 feature "Installing honeybadger via the cli" do
-  RSpec.shared_examples "cli installer" do |expected_output|
+  shared_examples_for "cli installer" do |expected_output|
     let(:config) { Honeybadger::Config.new(:api_key => 'asdf', :'config.path' => config_file) }
 
     before { set_environment_variable('HONEYBADGER_BACKEND', 'debug') }

@@ -1,7 +1,7 @@
 require 'honeybadger/config'
 
 feature "Installing honeybadger via the cli" do
-  RSpec.shared_examples "cli deployer" do
+  shared_examples_for "cli deployer" do
     let(:config) { Honeybadger::Config.new(:api_key => 'asdf', :'config.path' => config_file) }
 
     scenario "when the configuration is invalid" do

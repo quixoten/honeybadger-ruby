@@ -1,5 +1,5 @@
 feature "Installing honeybadger via the cli" do
-  RSpec.shared_examples "capistrano deployment" do
+  shared_examples_for "capistrano deployment" do
     before do
       capify
       append_to_file('Capfile', %(\nrequire 'capistrano/honeybadger'))
