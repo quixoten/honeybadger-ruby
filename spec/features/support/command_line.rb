@@ -11,8 +11,9 @@ module CommandLine
   end
 
   def capify
-    run_simple('bundle exec cap install .', fail_on_error: true)
-    run_simple('bundle exec capify .', fail_on_error: true)
+    unless run_simple('bundle exec cap install .', fail_on_error: false)
+      run_simple('bundle exec capify .', fail_on_error: true)
+    end
   end
 
   def assert_no_notification
