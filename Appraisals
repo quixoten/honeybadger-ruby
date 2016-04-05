@@ -30,20 +30,6 @@ appraise 'delayed_job' do
   gem 'delayed_job'
 end
 
-appraise 'rails3.0' do
-  gem 'rails', '~> 3.0.17'
-  gem 'better_errors', require: false, platforms: [:ruby_20, :ruby_21]
-  gem 'rack-mini-profiler', '~>0.1.31 ', require: false
-  gem 'capistrano', '~> 2.0'
-end
-
-appraise 'rails3.1' do
-  gem 'rails', '~> 3.1.12'
-  gem 'better_errors', require: false, platforms: [:ruby_20, :ruby_21]
-  gem 'rack-mini-profiler', require: false
-  gem 'capistrano', '~> 2.0'
-end
-
 appraise 'rails3.2' do
   gem 'rails', '~> 3.2.12'
   gem 'better_errors', require: false, platforms: [:ruby_20, :ruby_21]

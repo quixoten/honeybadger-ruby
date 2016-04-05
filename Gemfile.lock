@@ -144,7 +144,7 @@ PLATFORMS
 DEPENDENCIES
   allocation_stats
   appraisal
-  aruba
+  aruba (~> 0.14)
   capistrano (>= 3.2.0)
   codeclimate-test-reporter
   guard
